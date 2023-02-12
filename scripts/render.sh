@@ -9,6 +9,8 @@ window_ids=($(tmux lsw | sed -e 's/:.*//g'))
 session_name=$(tmux display -p "#S")
 themes_dir=$(tmux display -p "#{@tmux-tabicon-themes-dir}")
 
+cd $themes_dir
+
 normal_conf=$(find $themes_dir -maxdepth 1 -type f | grep "\/normal\.conf$")
 source $normal_conf
 
