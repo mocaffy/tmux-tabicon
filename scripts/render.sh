@@ -116,8 +116,8 @@ tmux set-window-option -g window-status-current-format ""
 #######################################
 # 現在のセッションにフォーマットを設定
 #######################################
-for ((I = $base_index; I < $(($window_count + $base_index)); I++)); do
-	tmux set-window-option -t $I window-status-format "$window_status_format"
-	tmux set-window-option -t $I window-status-current-format "$window_status_current_format"
-	tmux set-window-option -t $I window-status-separator "$tab_separator"
+for id in ${window_ids[@]}; do
+	tmux set-window-option -t $id window-status-format "$window_status_format"
+	tmux set-window-option -t $id window-status-current-format "$window_status_current_format"
+	tmux set-window-option -t $id window-status-separator "$tab_separator"
 done
