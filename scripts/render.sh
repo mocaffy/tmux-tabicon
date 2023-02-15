@@ -43,13 +43,13 @@ icon_format=""
 if [ ${#auto_icons[@]} -gt 0 ]; then
 	for ((I = 0; I < ${#auto_icons[@]}; I++)); do
 		is_target_format="?#{==:#{e|m|:#I,${#auto_icons[@]}},$I}"
-		icon_format="#{$is_target_format,${auto_icons[$I]} ,$icon_format}"
+		icon_format="#{$is_target_format,${auto_icons[$I]},$icon_format}"
 	done
 fi
 
 if [ ${#manual_icons[@]} -gt 0 ]; then
 	for ((I = 0; I < ${#manual_icons[@]}; I++)); do
-		icon_format="#{${manual_icons[$I]} ,$icon_format}"
+		icon_format="#{${manual_icons[$I]},$icon_format}"
 	done
 fi
 
@@ -61,13 +61,13 @@ color_format=""
 if [ ${#auto_colors[@]} -gt 0 ]; then
 	for ((I = 0; I < ${#auto_colors[@]}; I++)); do
 		is_target_format="?#{==:#{e|m|:#I,${#auto_colors[@]}},$I}"
-		color_format="#{$is_target_format,${auto_colors[$I]} ,$color_format}"
+		color_format="#{$is_target_format,${auto_colors[$I]},$color_format}"
 	done
 fi
 
 if [ ${#manual_colors[@]} -gt 0 ]; then
 	for ((I = 0; I < ${#manual_colors[@]}; I++)); do
-		color_format="#{${manual_colors[$I]} ,$color_format}"
+		color_format="#{${manual_colors[$I]},$color_format}"
 	done
 fi
 
@@ -80,9 +80,15 @@ is_last_format="?#{!=:#I,${window_ids[$(($window_count - 1))]}}"
 #######################################
 # 文字列生成系関数
 #######################################
-rep-cf() { v=$1; echo ${v//\#C/$color_format}; }
+rep-cf() {
+	v=$1
+	echo ${v//\#C/$color_format}
+}
 
 mk-wsf() {
+	if [ $tab_title_format != "" ]; then
+		tab_title_format=" $tab_title_format"
+	fi
 	v="$default_style"
 	v+="$tab_before_format$default_style"
 	v+="$icon_style$icon_format$default_style"
