@@ -42,7 +42,7 @@ icon_format=""
 
 if [ ${#auto_icons[@]} -gt 0 ]; then
 	for ((I = 0; I < ${#auto_icons[@]}; I++)); do
-		is_target_format="?#{==:$I,#(echo \$((#I - (#I / ${#auto_icons[@]}) * ${#auto_icons[@]})))}"
+		is_target_format="?#{==:#{e|m|:#I,${#auto_icons[@]}},$I}"
 		icon_format="#{$is_target_format,${auto_icons[$I]} ,$icon_format}"
 	done
 fi
@@ -60,7 +60,7 @@ color_format=""
 
 if [ ${#auto_colors[@]} -gt 0 ]; then
 	for ((I = 0; I < ${#auto_colors[@]}; I++)); do
-		is_target_format="?#{==:$I,#(echo \$((#I - (#I / ${#auto_colors[@]}) * ${#auto_colors[@]})))}"
+		is_target_format="?#{==:#{e|m|:#I,${#auto_colors[@]}},$I}"
 		color_format="#{$is_target_format,${auto_colors[$I]} ,$color_format}"
 	done
 fi
