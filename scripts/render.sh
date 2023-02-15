@@ -78,33 +78,38 @@ is_first_format="?#{!=:#I,${window_ids[0]}}"
 is_last_format="?#{!=:#I,${window_ids[$(($window_count - 1))]}}"
 
 #######################################
+# 置換系関数
+#######################################
+rep-cf() { v=$1; echo ${v//\#C/$color_format}; }
+
+#######################################
 # 通常タブのフォーマットを作成
 #######################################
-tab_style=${style_tab//\#C/$color_format}
-tab_before_format="#{$is_first_format,$tab_before,$tab_before_first}"
-tab_before_format=${tab_before_format//\#C/$color_format}
-tab_after_format="#{$is_last_format,$tab_after,$tab_after_last}"
-tab_after_format=${tab_after_format//\#C/$color_format}
+tab_style=$(rep-cf $style_tab)
+icon_style=$(rep-cf $style_tab_icon)
+title_style=$(rep-cf $style_tab_title)
 
-icon_style=${style_tab_icon//\#C/$color_format}
-title_style=${style_tab_title//\#C/$color_format}
+tab_before_format=$(rep-cf "#{$is_first_format,$tab_before,$tab_before_first}")
+tab_after_format=$(rep-cf "#{$is_last_format,$tab_after,$tab_after_last}")
+
+window_status_format="$tab_style"
 window_status_format+="$tab_style$tab_before_format$tab_style"
-window_status_format+="$icon_style$icon_format"
+window_status_format+="$icon_style$icon_format$tab_style"
 window_status_format+="$title_style$tab_title$tab_after_format"
 
 #######################################
 # アクティブなタブのフォーマットを作成
 #######################################
-tab_style=${style_tab_active//\#C/$color_format}
-tab_active_before_format="#{$is_first_format,$tab_active_before,$tab_active_before_first}"
-tab_active_before_format=${tab_active_before_format//\#C/$color_format}
-tab_active_after_format="#{$is_last_format,$tab_active_after,$tab_active_after_last}"
-tab_active_after_format=${tab_active_after_format//\#C/$color_format}
+tab_style=$(rep-cf $style_tab_active)
+icon_style=$(rep-cf $style_tab_active_icon)
+title_style=$(rep-cf $style_tab_active_title)
 
-icon_style=${style_tab_active_icon//\#C/$color_format}
-title_style=${style_tab_active_title//\#C/$color_format}
-window_status_current_format+="$tab_style$tab_active_before_format$tab_style"
-window_status_current_format+="$icon_style$icon_format"
+tab_active_before_format=$(rep-cf "#{$is_first_format,$tab_active_before,$tab_active_before_first}")
+tab_active_after_format=$(rep-cf "#{$is_last_format,$tab_active_after,$tab_active_after_last}")
+
+window_status_current_format="$tab_style"
+window_status_current_format+="$tab_active_before_format$tab_style"
+window_status_current_format+="$icon_style$icon_format$tab_style"
 window_status_current_format+="$title_style$tab_active_title$tab_active_after_format"
 
 #######################################
