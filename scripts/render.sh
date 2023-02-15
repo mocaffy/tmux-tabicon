@@ -83,13 +83,12 @@ is_last_format="?#{!=:#I,${window_ids[$(($window_count - 1))]}}"
 rep-cf() { v=$1; echo ${v//\#C/$color_format}; }
 
 mk-wsf() {
-	echo "
-		$default_style
-		$tab_before_format$default_style
-		$icon_style$icon_format$default_style
-		$title_style$tab_title_format$default_style
-		$tab_after_format
-	"
+	v="$default_style"
+	v+="$tab_before_format$default_style"
+	v+="$icon_style$icon_format$default_style"
+	v+="$title_style$tab_title_format$default_style"
+	v+="$tab_after_format"
+	echo $v
 }
 
 #######################################
