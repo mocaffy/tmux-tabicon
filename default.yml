@@ -1,0 +1,73 @@
+# tmux-tabicon - Default YAML Configuration
+#
+# This file defines the default appearance of tmux window tabs.
+# Users can override these settings by creating custom configuration files.
+
+# Color settings
+colors:
+  # Auto colors: Colors that are automatically assigned to tabs in sequence
+  # These colors will be cycled through for consecutive tabs
+  auto:
+    - "#9a348e"
+    - "#da627d"
+    - "#fca17d"
+    - "#86bbd8"
+    - "#06969A"
+    - "#33658a"
+  
+  # Manual colors: Colors applied to specific tabs based on conditions
+  # Format: condition and color pairs
+  manual:
+    - condition: "#{==:#W,[tmux]}"
+      color: "#0000ff"
+
+# Icon settings
+icons:
+  # Auto icons: Icons that are automatically assigned to tabs in sequence
+  auto:
+    - "●"
+  
+  # Manual icons: Icons applied to specific tabs based on conditions
+  manual:
+    - condition: "#{==:#W,[tmux]}"
+      icon: ""
+
+# Normal tab appearance
+normal_tab:
+  # Title format for normal (inactive) tabs
+  # #W represents the window name
+  title: "#W"
+  
+  # Formatting for the beginning and end of tabs
+  formatting:
+    before_first: " "      # For the first tab
+    before: "#[fg=#222233]▏"  # For other tabs
+    after: " "            # For most tabs
+    after_last: " "       # For the last tab
+  
+  # Style settings for normal tabs
+  style:
+    base: ""              # Base style for the entire tab
+    icon: "#[fg=#C]"      # Style for the icon (#C will be replaced with the color)
+    title: "#[fg=#ffffff]"  # Style for the title text
+
+# Active tab appearance
+active_tab:
+  # Title format for the active tab
+  title: "#W"
+  
+  # Formatting for the beginning and end of the active tab
+  formatting:
+    before_first: " "      # When active tab is the first tab
+    before: "#[fg=#222233]▏"  # When active tab is not the first
+    after: " "            # When active tab is not the last
+    after_last: " "       # When active tab is the last tab
+  
+  # Style settings for the active tab
+  style:
+    base: "#[bg=#C]#[fg=#ffffff]"  # Base style (#C will be replaced with the color)
+    icon: ""         # Additional style for the icon
+    title: ""        # Additional style for the title
+
+# Character(s) to display between tabs
+separator: ""

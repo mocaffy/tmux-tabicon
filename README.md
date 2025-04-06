@@ -80,13 +80,77 @@ set -g @tmux-tabicon-themes-dir "~/.config/tmux/tabicon-themes"
 
 ### Configuration Files
 
-tmux-tabicon uses the following configuration files:
+tmux-tabicon supports both YAML and Bash configuration formats:
 
-1. **default.conf** - Built-in default settings (don't modify this)
-2. **normal.conf** - Your custom settings that apply to all sessions (create this in your themes directory)
-3. **[session-name].conf** - Session-specific settings (optional, create in your themes directory)
+1. **default.yml/default.conf** - Built-in default settings (don't modify these)
+2. **normal.yml/normal.conf** - Your custom settings that apply to all sessions (create in your themes directory)
+3. **[session-name].yml/[session-name].conf** - Session-specific settings (optional, create in your themes directory)
+
+YAML format is recommended for new users as it's more readable and less error-prone.
 
 ### Creating Your Theme
+
+#### Using YAML (Recommended)
+
+Create a `normal.yml` file in your themes directory:
+
+```bash
+mkdir -p ~/.config/tmux/tabicon-themes
+touch ~/.config/tmux/tabicon-themes/normal.yml
+```
+
+Example YAML configuration:
+
+```yaml
+# Color settings
+colors:
+  auto:
+    - "#9a348e"  # Purple
+    - "#da627d"  # Pink
+    - "#fca17d"  # Orange
+  manual:
+    - condition: "#{==:#W,[tmux]}"
+      color: "#0000ff"
+
+# Icon settings
+icons:
+  auto:
+    - "●"
+  manual:
+    - condition: "#{==:#W,[tmux]}"
+      icon: ""
+
+# Normal tab appearance
+normal_tab:
+  title: "#W"
+  formatting:
+    before_first: " "
+    before: "#[fg=#222233]▏"
+    after: " "
+    after_last: " "
+  style:
+    base: ""
+    icon: "#[fg=#C]"
+    title: "#[fg=#ffffff]"
+
+# Active tab appearance
+active_tab:
+  title: "#W"
+  formatting:
+    before_first: " "
+    before: "#[fg=#222233]▏"
+    after: " "
+    after_last: " "
+  style:
+    base: "#[bg=#C]#[fg=#ffffff]"
+    icon: ""
+    title: ""
+
+# Character between tabs
+separator: ""
+```
+
+#### Using Bash (Legacy)
 
 Create a `normal.conf` file in your themes directory:
 
@@ -101,6 +165,22 @@ Here are the key configuration options you can set in your theme files:
 
 #### Colors
 
+YAML format:
+```yaml
+colors:
+  # Automatic colors (rotated through tabs)
+  auto:
+    - "#9a348e"
+    - "#da627d"
+    - "#fca17d"
+  
+  # Conditional colors (applied based on window name or other conditions)
+  manual:
+    - condition: "#{==:#W,[tmux]}"
+      color: "#0000ff"
+```
+
+Bash format:
 ```bash
 # Automatic colors (rotated through tabs)
 auto_colors=("#9a348e" "#da627d" "#fca17d" "#86bbd8" "#06969A" "#33658a")
@@ -111,6 +191,20 @@ manual_colors=("?#{==:#W,[tmux]},#0000ff")
 
 #### Icons
 
+YAML format:
+```yaml
+icons:
+  # Automatic icons (rotated through tabs)
+  auto:
+    - "●"
+  
+  # Conditional icons (applied based on window name or other conditions)
+  manual:
+    - condition: "#{==:#W,[tmux]}"
+      icon: ""
+```
+
+Bash format:
 ```bash
 # Automatic icons (rotated through tabs)
 auto_icons=("●")
@@ -121,6 +215,27 @@ manual_icons=("?#{==:#W,[tmux]},")
 
 #### Normal Tab Styling
 
+YAML format:
+```yaml
+normal_tab:
+  # Window title format
+  title: "#W"
+  
+  # Formatting for tab beginning and end
+  formatting:
+    before_first: " "      # For the first tab
+    before: "#[fg=#222233]▏"  # For other tabs
+    after: " "            # For most tabs
+    after_last: " "       # For the last tab
+  
+  # Style settings
+  style:
+    base: ""              # Base style
+    icon: "#[fg=#C]"      # Icon style (#C is replaced with color)
+    title: "#[fg=#ffffff]"  # Title style
+```
+
+Bash format:
 ```bash
 # Window title format
 tab_title="#W"
@@ -141,6 +256,27 @@ tab_after_last=" "       # For the last tab
 
 #### Active Tab Styling
 
+YAML format:
+```yaml
+active_tab:
+  # Active window title format
+  title: "#W"
+  
+  # Formatting for active tab beginning and end
+  formatting:
+    before_first: " "
+    before: "#[fg=#222233]▏"
+    after: " "
+    after_last: " "
+  
+  # Style settings for active tab
+  style:
+    base: "#[bg=#C]#[fg=#ffffff]"  # Base style
+    icon: ""                      # Icon style
+    title: ""                     # Title style
+```
+
+Bash format:
 ```bash
 # Active window title format
 tab_active_title="#W"
@@ -161,6 +297,13 @@ tab_active_after_last=" "
 
 #### Separator
 
+YAML format:
+```yaml
+# Character between tabs
+separator: ""
+```
+
+Bash format:
 ```bash
 # Character between tabs
 tab_separator=""
