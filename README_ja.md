@@ -80,13 +80,77 @@ set -g @tmux-tabicon-themes-dir "~/.config/tmux/tabicon-themes"
 
 ### 設定ファイル
 
-tmux-tabiconは以下の設定ファイルを使用します：
+tmux-tabiconはYAMLとBashの両方の設定フォーマットをサポートしています：
 
-1. **default.conf** - 組み込みのデフォルト設定（変更しないでください）
-2. **normal.conf** - すべてのセッションに適用されるカスタム設定（テーマディレクトリに作成します）
-3. **[セッション名].conf** - セッション固有の設定（オプション、テーマディレクトリに作成します）
+1. **default.yml/default.conf** - 組み込みのデフォルト設定（変更しないでください）
+2. **normal.yml/normal.conf** - すべてのセッションに適用されるカスタム設定（テーマディレクトリに作成します）
+3. **[セッション名].yml/[セッション名].conf** - セッション固有の設定（オプション、テーマディレクトリに作成します）
+
+新しいユーザーには、より読みやすくエラーが少ないYAMLフォーマットをお勧めします。
 
 ### テーマの作成
+
+#### YAMLを使用する方法（推奨）
+
+テーマディレクトリに`normal.yml`ファイルを作成します：
+
+```bash
+mkdir -p ~/.config/tmux/tabicon-themes
+touch ~/.config/tmux/tabicon-themes/normal.yml
+```
+
+YAMLの設定例：
+
+```yaml
+# 色の設定
+colors:
+  auto:
+    - "#9a348e"  # 紫
+    - "#da627d"  # ピンク
+    - "#fca17d"  # オレンジ
+  manual:
+    - condition: "#{==:#W,[tmux]}"
+      color: "#0000ff"
+
+# アイコンの設定
+icons:
+  auto:
+    - "●"
+  manual:
+    - condition: "#{==:#W,[tmux]}"
+      icon: ""
+
+# 通常タブの外観
+normal_tab:
+  title: "#W"
+  formatting:
+    before_first: " "
+    before: "#[fg=#222233]▏"
+    after: " "
+    after_last: " "
+  style:
+    base: ""
+    icon: "#[fg=#C]"
+    title: "#[fg=#ffffff]"
+
+# アクティブタブの外観
+active_tab:
+  title: "#W"
+  formatting:
+    before_first: " "
+    before: "#[fg=#222233]▏"
+    after: " "
+    after_last: " "
+  style:
+    base: "#[bg=#C]#[fg=#ffffff]"
+    icon: ""
+    title: ""
+
+# タブ間の文字
+separator: ""
+```
+
+#### Bashを使用する方法（レガシー）
 
 テーマディレクトリに`normal.conf`ファイルを作成します：
 
@@ -101,6 +165,22 @@ touch ~/.config/tmux/tabicon-themes/normal.conf
 
 #### 色
 
+YAMLフォーマット：
+```yaml
+colors:
+  # 自動色（タブを通じてローテーションされる）
+  auto:
+    - "#9a348e"
+    - "#da627d"
+    - "#fca17d"
+  
+  # 条件付き色（ウィンドウ名やその他の条件に基づいて適用される）
+  manual:
+    - condition: "#{==:#W,[tmux]}"
+      color: "#0000ff"
+```
+
+Bashフォーマット：
 ```bash
 # 自動色（タブを通じてローテーションされる）
 auto_colors=("#9a348e" "#da627d" "#fca17d" "#86bbd8" "#06969A" "#33658a")
@@ -111,6 +191,20 @@ manual_colors=("?#{==:#W,[tmux]},#0000ff")
 
 #### アイコン
 
+YAMLフォーマット：
+```yaml
+icons:
+  # 自動アイコン（タブを通じてローテーションされる）
+  auto:
+    - "●"
+  
+  # 条件付きアイコン（ウィンドウ名やその他の条件に基づいて適用される）
+  manual:
+    - condition: "#{==:#W,[tmux]}"
+      icon: ""
+```
+
+Bashフォーマット：
 ```bash
 # 自動アイコン（タブを通じてローテーションされる）
 auto_icons=("●")
@@ -121,6 +215,27 @@ manual_icons=("?#{==:#W,[tmux]},")
 
 #### 通常タブのスタイル
 
+YAMLフォーマット：
+```yaml
+normal_tab:
+  # ウィンドウタイトルのフォーマット
+  title: "#W"
+  
+  # タブの先頭部分と末尾部分のフォーマット
+  formatting:
+    before_first: " "      # 最初のタブ用
+    before: "#[fg=#222233]▏"  # その他のタブ用
+    after: " "            # ほとんどのタブ用
+    after_last: " "       # 最後のタブ用
+  
+  # スタイル設定
+  style:
+    base: ""              # 基本スタイル
+    icon: "#[fg=#C]"      # アイコンスタイル（#Cは色に置き換えられる）
+    title: "#[fg=#ffffff]"  # タイトルスタイル
+```
+
+Bashフォーマット：
 ```bash
 # ウィンドウタイトルのフォーマット
 tab_title="#W"
@@ -141,6 +256,27 @@ tab_after_last=" "       # 最後のタブ用
 
 #### アクティブタブのスタイル
 
+YAMLフォーマット：
+```yaml
+active_tab:
+  # アクティブウィンドウタイトルのフォーマット
+  title: "#W"
+  
+  # アクティブタブの先頭部分と末尾部分のフォーマット
+  formatting:
+    before_first: " "
+    before: "#[fg=#222233]▏"
+    after: " "
+    after_last: " "
+  
+  # アクティブタブのスタイル設定
+  style:
+    base: "#[bg=#C]#[fg=#ffffff]"  # 基本スタイル
+    icon: ""                      # アイコンスタイル
+    title: ""                     # タイトルスタイル
+```
+
+Bashフォーマット：
 ```bash
 # アクティブウィンドウタイトルのフォーマット
 tab_active_title="#W"
@@ -161,6 +297,13 @@ tab_active_after_last=" "
 
 #### セパレータ
 
+YAMLフォーマット：
+```yaml
+# タブ間の文字
+separator: ""
+```
+
+Bashフォーマット：
 ```bash
 # タブ間の文字
 tab_separator=""

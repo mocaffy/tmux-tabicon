@@ -27,25 +27,66 @@ themes_dir=$(tmux display -p "#{@tmux-tabicon-themes-dir}")
 # SECTION 2: CONFIGURATION LOADING
 #------------------------------------------------------------------------------
 
-# Load default configuration
-cd $(dirname $0) && cd ..
-source ./default.conf
+# Helper function to load YAML configuration
+load_yaml_config() {
+    local yaml_file=$1
+    local temp_bash_file=$(mktemp)
+    
+    if [ -f "$yaml_file" ]; then
+        # Convert YAML to Bash variables
+        python3 "$(dirname $0)/yaml_to_bash.py" "$yaml_file" > "$temp_bash_file"
+        source "$temp_bash_file"
+        rm "$temp_bash_file"
+        return 0
+    fi
+    return 1
+}
 
-# Load user configurations
-# First load the normal.conf file which applies to all sessions
+# Change to the plugin directory
+cd $(dirname $0) && cd ..
+
+# First try to load default.yml, fall back to default.conf if not found or conversion fails
+if ! load_yaml_config "./default.yml"; then
+    source ./default.conf
+fi
+
+# Change to the themes directory
 cd $themes_dir
+
+# Try to load normal.yml first, then fall back to normal.conf
+normal_yml=$(find $themes_dir -maxdepth 1 -type f | grep "\/normal\.yml$")
 normal_conf=$(find $themes_dir -maxdepth 1 -type f | grep "\/normal\.conf$")
-source $normal_conf
+
+if [ -n "$normal_yml" ]; then
+    load_yaml_config "$normal_yml"
+elif [ -n "$normal_conf" ]; then
+    source $normal_conf
+fi
 
 # Then load session-specific configuration if it exists
-# (filename matches the current session name)
-for file in $(\find $themes_dir -maxdepth 1 -type f | grep "\.conf$"); do
+# First try YAML format, then fall back to conf format
+yaml_loaded=false
+for file in $(\find $themes_dir -maxdepth 1 -type f | grep "\.yml$"); do
+    target_session_name=${file##*/}
+    target_session_name=${target_session_name%.*}
+    if [ "$target_session_name" = "$session_name" ]; then
+        load_yaml_config "$file"
+        yaml_loaded=true
+        break
+    fi
+done
+
+# If no YAML config was loaded for this session, try conf format
+if [ "$yaml_loaded" = false ]; then
+    for file in $(\find $themes_dir -maxdepth 1 -type f | grep "\.conf$"); do
         target_session_name=${file##*/}
         target_session_name=${target_session_name%.*}
-        if [ $target_session_name = $session_name ]; then
-                source $file
+        if [ "$target_session_name" = "$session_name" ]; then
+            source "$file"
+            break
         fi
-done
+    done
+fi
 
 #------------------------------------------------------------------------------
 # SECTION 3: FORMAT STRING GENERATION

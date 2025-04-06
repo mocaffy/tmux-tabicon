@@ -1,0 +1,78 @@
+# tmux-tabicon - Sample User Configuration
+#
+# This is a sample YAML configuration file for tmux-tabicon.
+# Copy this file to your themes directory as "normal.yml" to apply it globally.
+
+# Color settings
+colors:
+  # Auto colors: Colors that are automatically assigned to tabs in sequence
+  auto:
+    - "#9a348e"  # Purple
+    - "#da627d"  # Pink
+    - "#fca17d"  # Orange
+    - "#86bbd8"  # Light Blue
+    - "#06969A"  # Teal
+    - "#33658a"  # Dark Blue
+  
+  # Manual colors: Colors applied to specific tabs based on conditions
+  manual:
+    - condition: "#{==:#W,[tmux]}"
+      color: "#0000ff"
+    - condition: "#{==:#{pane_current_command},vim}"
+      color: "#00aa00"
+    - condition: "#{==:#{pane_current_command},ssh}"
+      color: "#ff0000"
+
+# Icon settings
+icons:
+  # Auto icons: Icons that are automatically assigned to tabs in sequence
+  auto:
+    - "●"
+  
+  # Manual icons: Icons applied to specific tabs based on conditions
+  manual:
+    - condition: "#{==:#W,[tmux]}"
+      icon: ""
+    - condition: "#{==:#{pane_current_command},vim}"
+      icon: ""
+    - condition: "#{==:#{pane_current_command},ssh}"
+      icon: ""
+
+# Normal tab appearance
+normal_tab:
+  # Title format for normal (inactive) tabs
+  title: "#W"
+  
+  # Formatting for the beginning and end of tabs
+  formatting:
+    before_first: " "
+    before: "#[fg=#222233]▏"
+    after: " "
+    after_last: " "
+  
+  # Style settings for normal tabs
+  style:
+    base: ""
+    icon: "#[fg=#C]"
+    title: "#[fg=#ffffff]"
+
+# Active tab appearance
+active_tab:
+  # Title format for the active tab
+  title: "#W"
+  
+  # Formatting for the beginning and end of the active tab
+  formatting:
+    before_first: " "
+    before: "#[fg=#222233]▏"
+    after: " "
+    after_last: " "
+  
+  # Style settings for the active tab
+  style:
+    base: "#[bg=#C]#[fg=#ffffff]"
+    icon: ""
+    title: ""
+
+# Character(s) to display between tabs
+separator: ""
