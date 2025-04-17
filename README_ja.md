@@ -2,8 +2,15 @@
 
 tmuxのウィンドウタブ（window-status）を色、アイコン、高度なフォーマットでカスタマイズするための強力なプラグインです。
 
-[![スクリーンショット](https://user-images.githubusercontent.com/45122432/218329999-735b3a4f-23fc-4aea-95af-ca732cdfc03b.png)](https://user-images.githubusercontent.com/45122432/218329999-735b3a4f-23fc-4aea-95af-ca732cdfc03b.png)
-[![スクリーンショット](https://user-images.githubusercontent.com/45122432/218330413-3e45b472-dfaf-40bb-b7b4-38cd9e42d16d.png)](https://user-images.githubusercontent.com/45122432/218330413-3e45b472-dfaf-40bb-b7b4-38cd9e42d16d.png)
+[English](README.md)
+
+## スクリーンショット
+
+自動色とアイコンを使用したデフォルトテーマ：
+[![デフォルトテーマ](https://user-images.githubusercontent.com/45122432/218329999-735b3a4f-23fc-4aea-95af-ca732cdfc03b.png)](https://user-images.githubusercontent.com/45122432/218329999-735b3a4f-23fc-4aea-95af-ca732cdfc03b.png)
+
+プロセス固有のアイコンを使用したカスタムテーマ：
+[![カスタムテーマ](https://user-images.githubusercontent.com/45122432/218330413-3e45b472-dfaf-40bb-b7b4-38cd9e42d16d.png)](https://user-images.githubusercontent.com/45122432/218330413-3e45b472-dfaf-40bb-b7b4-38cd9e42d16d.png)
 
 ## tmux-tabiconとは？
 
@@ -166,6 +173,48 @@ tab_active_after_last=" "
 tab_separator=""
 ```
 
+## 設定例
+
+### 自動色を使用した基本テーマ
+
+```bash
+# タブをローテーションする色
+auto_colors=("#9a348e" "#da627d" "#fca17d" "#86bbd8")
+
+# すべてのタブにドットをアイコンとして使用
+auto_icons=("●")
+
+# シンプルなタブフォーマット
+tab_before=" "
+tab_after=" "
+style_tab_icon="#[fg=#C]"  # #Cは現在の色に置き換えられます
+style_tab_title="#[fg=#ffffff]"
+```
+
+### プロセス固有のテーマ
+
+```bash
+# 特定のプロセス用の色
+manual_colors=(
+  "?#{==:#{pane_current_command},vim},#98c379"
+  "?#{==:#{pane_current_command},ssh},#e06c75"
+  "?#{==:#{pane_current_command},node},#61afef"
+)
+
+# 特定のプロセス用のアイコン
+manual_icons=(
+  "?#{==:#{pane_current_command},vim},"
+  "?#{==:#{pane_current_command},ssh},"
+  "?#{==:#{pane_current_command},node},"
+)
+
+# モダンなタブスタイル
+tab_before="#[fg=#303030]│"
+tab_after=" "
+style_tab_icon="#[fg=#C]"
+style_tab_title="#[fg=#ffffff]"
+```
+
 ## 高度な使用法
 
 ### 条件付きフォーマット
@@ -173,11 +222,19 @@ tab_separator=""
 tmuxの条件付きフォーマットを使用して、ウィンドウのプロパティに基づいて色やアイコンを変更できます：
 
 ```bash
-# SSHウィンドウを赤色にする
-manual_colors=("?#{==:#{pane_current_command},ssh},#ff0000")
+# 条件に基づく色
+manual_colors=(
+  "?#{==:#{pane_current_command},ssh},#ff0000"  # SSHセッションを赤色に
+  "?#{==:#{window_name},logs},#00ff00"          # "logs"という名前のウィンドウを緑色に
+  "?#{==:#{pane_current_path},~/work},#0000ff"  # ~/workディレクトリのウィンドウを青色に
+)
 
-# vimウィンドウに特別なアイコンを追加する
-manual_icons=("?#{==:#{pane_current_command},vim},")
+# 条件に基づくアイコン
+manual_icons=(
+  "?#{==:#{pane_current_command},vim},"      # Vimアイコン
+  "?#{==:#{pane_current_command},docker},"   # Dockerアイコン
+  "?#{==:#{window_name},server},"           # サーバーアイコン
+)
 ```
 
 ### セッション固有のテーマ
@@ -191,17 +248,77 @@ touch ~/.config/tmux/tabicon-themes/dev.conf
 
 この設定は、「dev」セッションにいる場合にのみ適用されます。
 
+## テーマ開発ガイド
+
+1. **コピーから始める**
+   ```bash
+   cp ~/.tmux/plugins/tmux-tabicon/default.conf ~/.config/tmux/tabicon-themes/normal.conf
+   ```
+
+2. **変数を理解する**
+   - `auto_*`: タブをローテーションする値
+   - `manual_*`: ウィンドウのプロパティに基づく条件付きの値
+   - `style_*`: タブの各部分のスタイル文字列
+   - `tab_*`: タブの構造要素
+
+3. **変更をテストする**
+   - 小さな変更を加えて`prefix` + <kbd>r</kbd>で更新
+   - `tmux display-message`を使用して変数をデバッグ
+   - tmuxサーバーログでエラーを確認
+
+4. **テーマを共有する**
+   - [tmux-tabicon-theme](https://github.com/mocaffy/tmux-tabicon-theme)への貢献を検討
+
 ## トラブルシューティング
 
-タブが正しく更新されない場合：
+### よくある問題
 
-1. `prefix` + <kbd>r</kbd>を押してタブを手動で更新する
-2. テーマディレクトリが正しく設定されていることを確認する
-3. 設定ファイルの構文が正しいことを確認する
+1. **タブが更新されない**
+   - `prefix` + <kbd>r</kbd>で手動更新
+   - テーマディレクトリの設定を確認
+   - 設定ファイルのパーミッションを確認
+   - テーマファイルの構文エラーを確認
+
+2. **アイコンが表示されない**
+   - 使用しているアイコンがターミナルでサポートされているか確認
+   - 互換性のあるフォント（例：Nerd Fonts）を使用しているか確認
+   - まずは単純なUnicode文字を試す
+
+3. **色が機能しない**
+   - ターミナルが256色またはTrue Colorをサポートしているか確認
+   - tmuxの色設定を確認（`set -g default-terminal`）
+   - 16進数の色の代わりに標準的な色コードを試す
+
+4. **パフォーマンスの問題**
+   - 条件チェックの数を減らす
+   - 複雑なフォーマット文字列を簡素化
+   - tmuxサーバーログで警告を確認
+
+### デバッグモード
+
+デバッグモードを有効にしてより詳細な情報を表示：
+```bash
+set -g @tmux-tabicon-debug "true"
+```
+
+## 貢献
+
+貢献を歓迎します！プルリクエストを提出する前に[貢献ガイドライン](CONTRIBUTING.md)をお読みください。
+
+1. リポジトリをフォーク
+2. 機能ブランチを作成
+3. 変更を加える
+4. プルリクエストを提出
 
 ## 関連プロジェクト
 
 - [tmux-tabicon-theme](https://github.com/mocaffy/tmux-tabicon-theme) - tmux-tabicon用の既製テーマ
+- [tmux-powerline](https://github.com/erikw/tmux-powerline) - 同様のステータスラインカスタマイズ
+- [tmux-themepack](https://github.com/jimeh/tmux-themepack) - tmuxテーマコレクション
+
+## 変更履歴
+
+変更の一覧については[CHANGELOG.md](CHANGELOG.md)を参照してください。
 
 ## ライセンス
 

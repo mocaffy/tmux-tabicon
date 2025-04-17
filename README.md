@@ -2,8 +2,15 @@
 
 A powerful plugin for customizing tmux window tabs (window-status) with colors, icons, and advanced formatting.
 
-[![screenshot](https://user-images.githubusercontent.com/45122432/218329999-735b3a4f-23fc-4aea-95af-ca732cdfc03b.png)](https://user-images.githubusercontent.com/45122432/218329999-735b3a4f-23fc-4aea-95af-ca732cdfc03b.png)
-[![screenshot](https://user-images.githubusercontent.com/45122432/218330413-3e45b472-dfaf-40bb-b7b4-38cd9e42d16d.png)](https://user-images.githubusercontent.com/45122432/218330413-3e45b472-dfaf-40bb-b7b4-38cd9e42d16d.png)
+[日本語](README_ja.md)
+
+## Screenshots
+
+Default theme with automatic colors and icons:
+[![Default theme](https://user-images.githubusercontent.com/45122432/218329999-735b3a4f-23fc-4aea-95af-ca732cdfc03b.png)](https://user-images.githubusercontent.com/45122432/218329999-735b3a4f-23fc-4aea-95af-ca732cdfc03b.png)
+
+Custom theme with process-specific icons:
+[![Custom theme](https://user-images.githubusercontent.com/45122432/218330413-3e45b472-dfaf-40bb-b7b4-38cd9e42d16d.png)](https://user-images.githubusercontent.com/45122432/218330413-3e45b472-dfaf-40bb-b7b4-38cd9e42d16d.png)
 
 ## What is tmux-tabicon?
 
@@ -166,6 +173,48 @@ tab_active_after_last=" "
 tab_separator=""
 ```
 
+## Example Configurations
+
+### Basic Theme with Automatic Colors
+
+```bash
+# Rotate through these colors for tabs
+auto_colors=("#9a348e" "#da627d" "#fca17d" "#86bbd8")
+
+# Use a dot as the icon for all tabs
+auto_icons=("●")
+
+# Simple tab formatting
+tab_before=" "
+tab_after=" "
+style_tab_icon="#[fg=#C]"  # #C is replaced with the current color
+style_tab_title="#[fg=#ffffff]"
+```
+
+### Process-Specific Theme
+
+```bash
+# Colors for specific processes
+manual_colors=(
+  "?#{==:#{pane_current_command},vim},#98c379"
+  "?#{==:#{pane_current_command},ssh},#e06c75"
+  "?#{==:#{pane_current_command},node},#61afef"
+)
+
+# Icons for specific processes
+manual_icons=(
+  "?#{==:#{pane_current_command},vim},"
+  "?#{==:#{pane_current_command},ssh},"
+  "?#{==:#{pane_current_command},node},"
+)
+
+# Modern tab style
+tab_before="#[fg=#303030]│"
+tab_after=" "
+style_tab_icon="#[fg=#C]"
+style_tab_title="#[fg=#ffffff]"
+```
+
 ## Advanced Usage
 
 ### Conditional Formatting
@@ -173,11 +222,19 @@ tab_separator=""
 You can use tmux's conditional formatting to change colors or icons based on window properties:
 
 ```bash
-# Make SSH windows red
-manual_colors=("?#{==:#{pane_current_command},ssh},#ff0000")
+# Colors based on conditions
+manual_colors=(
+  "?#{==:#{pane_current_command},ssh},#ff0000"  # SSH sessions in red
+  "?#{==:#{window_name},logs},#00ff00"          # Windows named "logs" in green
+  "?#{==:#{pane_current_path},~/work},#0000ff"  # Windows in ~/work in blue
+)
 
-# Add special icon for vim windows
-manual_icons=("?#{==:#{pane_current_command},vim},")
+# Icons based on conditions
+manual_icons=(
+  "?#{==:#{pane_current_command},vim},"      # Vim icon
+  "?#{==:#{pane_current_command},docker},"   # Docker icon
+  "?#{==:#{window_name},server},"           # Server icon
+)
 ```
 
 ### Session-Specific Themes
@@ -191,17 +248,77 @@ touch ~/.config/tmux/tabicon-themes/dev.conf
 
 This configuration will only apply when you're in the "dev" session.
 
+## Theme Development Guide
+
+1. **Start with a Copy**
+   ```bash
+   cp ~/.tmux/plugins/tmux-tabicon/default.conf ~/.config/tmux/tabicon-themes/normal.conf
+   ```
+
+2. **Understand the Variables**
+   - `auto_*`: Values rotated through tabs
+   - `manual_*`: Conditional values based on window properties
+   - `style_*`: Style strings for different parts of the tab
+   - `tab_*`: Structural elements of the tab
+
+3. **Test Your Changes**
+   - Make small changes and refresh with `prefix` + <kbd>r</kbd>
+   - Use `tmux display-message` to debug variables
+   - Check the tmux server log for errors
+
+4. **Share Your Theme**
+   - Consider contributing to [tmux-tabicon-theme](https://github.com/mocaffy/tmux-tabicon-theme)
+
 ## Troubleshooting
 
-If your tabs aren't updating properly:
+### Common Issues
 
-1. Press `prefix` + <kbd>r</kbd> to manually refresh the tabs
-2. Check that your themes directory is set correctly
-3. Verify your configuration files have the correct syntax
+1. **Tabs Not Updating**
+   - Press `prefix` + <kbd>r</kbd> to manually refresh
+   - Check that your themes directory is set correctly
+   - Verify configuration file permissions
+   - Look for syntax errors in your theme files
+
+2. **Icons Not Displaying**
+   - Ensure your terminal supports the icons you're using
+   - Check that you're using a compatible font (e.g., Nerd Fonts)
+   - Try using simpler Unicode characters first
+
+3. **Colors Not Working**
+   - Verify your terminal supports 256 colors or true color
+   - Check your tmux color settings (`set -g default-terminal`)
+   - Try using standard color codes instead of hex colors
+
+4. **Performance Issues**
+   - Reduce the number of conditional checks
+   - Simplify complex format strings
+   - Check the tmux server log for warnings
+
+### Debug Mode
+
+Enable debug mode to see more information:
+```bash
+set -g @tmux-tabicon-debug "true"
+```
+
+## Contributing
+
+Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTING.md) before submitting pull requests.
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
 
 ## Related Projects
 
 - [tmux-tabicon-theme](https://github.com/mocaffy/tmux-tabicon-theme) - Pre-made themes for tmux-tabicon
+- [tmux-powerline](https://github.com/erikw/tmux-powerline) - Similar status line customization
+- [tmux-themepack](https://github.com/jimeh/tmux-themepack) - Collection of tmux themes
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for a list of changes.
 
 ## License
 
