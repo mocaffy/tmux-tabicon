@@ -45,7 +45,7 @@ load_scalar_option() {
     local val
     val=$(tmux show-option -gqv "$tmux_opt" 2>/dev/null)
     if [ -n "$val" ]; then
-        eval "${var_name}=\$val"
+        printf -v "$var_name" '%s' "$val"
     fi
 }
 
