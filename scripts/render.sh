@@ -16,10 +16,9 @@ PLUGIN_DIR="$(cd -- "$(dirname "$0")/.." >/dev/null 2>&1 && pwd -P)"
 # SECTION 1: INITIALIZATION AND DATA COLLECTION
 #------------------------------------------------------------------------------
 
-base_index=$(tmux display -p "#{E:base-index}")
-window_count=$(tmux list-windows | wc -l)
-window_ids=($(tmux lsw | sed -e 's/:.*//g'))
-session_name=$(tmux display -p "#S")
+window_ids=()
+while IFS= read -r _id; do window_ids+=("$_id"); done < <(tmux lsw -F '#I')
+window_count=${#window_ids[@]}
 
 #------------------------------------------------------------------------------
 # SECTION 2: CONFIGURATION LOADING
