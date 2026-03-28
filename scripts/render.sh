@@ -2,129 +2,147 @@
 
 ###############################################################################
 # tmux-tabicon - A plugin for decorating tmux window tabs
-# 
-# This script renders the tab decorations based on configuration files.
-# It applies colors, icons, and formatting to tmux window tabs.
+#
+# This script renders the tab decorations based on configuration.
+# Settings are loaded in the following order (later overrides earlier):
+#   Layer 0: default.conf (built-in defaults)
+#   Layer 1: presets/<name>.conf (selected via @tmux-tabicon-preset)
+#   Layer 2: @tmux-tabicon-* tmux options (scalar and array overrides)
 ###############################################################################
+
+PLUGIN_DIR="$(cd -- "$(dirname "$0")/.." >/dev/null 2>&1 && pwd -P)"
 
 #------------------------------------------------------------------------------
 # SECTION 1: INITIALIZATION AND DATA COLLECTION
 #------------------------------------------------------------------------------
 
-# Retrieve basic information from tmux
-# base_index    : The starting index for window IDs
-# window_count  : Total number of windows in the current session
-# window_ids    : List of all window IDs in the current session
-# session_name  : Name of the current tmux session
-# themes_dir    : Directory containing theme configuration files
 base_index=$(tmux display -p "#{E:base-index}")
 window_count=$(tmux list-windows | wc -l)
 window_ids=($(tmux lsw | sed -e 's/:.*//g'))
 session_name=$(tmux display -p "#S")
-themes_dir=$(tmux display -p "#{@tmux-tabicon-themes-dir}")
 
 #------------------------------------------------------------------------------
 # SECTION 2: CONFIGURATION LOADING
 #------------------------------------------------------------------------------
 
-# Load default configuration
-cd $(dirname $0) && cd ..
-source ./default.conf
+# Layer 0: built-in defaults
+source "$PLUGIN_DIR/default.conf"
 
-# Load user configurations
-# First load the normal.conf file which applies to all sessions
-cd $themes_dir
-normal_conf=$(find $themes_dir -maxdepth 1 -type f | grep "\/normal\.conf$")
-source $normal_conf
+# Layer 1: preset
+preset=$(tmux show-option -gqv "@tmux-tabicon-preset" 2>/dev/null)
+if [ -n "$preset" ] && [ "$preset" != "none" ]; then
+    preset_file="$PLUGIN_DIR/presets/${preset}.conf"
+    if [ -f "$preset_file" ]; then
+        source "$preset_file"
+    else
+        tmux display-message "tmux-tabicon: preset '${preset}' not found"
+    fi
+fi
 
-# Then load session-specific configuration if it exists
-# (filename matches the current session name)
-for file in $(\find $themes_dir -maxdepth 1 -type f | grep "\.conf$"); do
-        target_session_name=${file##*/}
-        target_session_name=${target_session_name%.*}
-        if [ $target_session_name = $session_name ]; then
-                source $file
-        fi
-done
+# Layer 2a: scalar tmux option overrides
+load_scalar_option() {
+    local tmux_opt="$1"
+    local var_name="$2"
+    local val
+    val=$(tmux show-option -gqv "$tmux_opt" 2>/dev/null)
+    if [ -n "$val" ]; then
+        eval "${var_name}=\$val"
+    fi
+}
+
+load_scalar_option "@tmux-tabicon-tab-title"               "tab_title"
+load_scalar_option "@tmux-tabicon-tab-active-title"        "tab_active_title"
+load_scalar_option "@tmux-tabicon-tab-separator"           "tab_separator"
+load_scalar_option "@tmux-tabicon-style-tab"               "style_tab"
+load_scalar_option "@tmux-tabicon-style-tab-icon"          "style_tab_icon"
+load_scalar_option "@tmux-tabicon-style-tab-title"         "style_tab_title"
+load_scalar_option "@tmux-tabicon-style-tab-active"        "style_tab_active"
+load_scalar_option "@tmux-tabicon-style-tab-active-icon"   "style_tab_active_icon"
+load_scalar_option "@tmux-tabicon-style-tab-active-title"  "style_tab_active_title"
+load_scalar_option "@tmux-tabicon-tab-before"              "tab_before"
+load_scalar_option "@tmux-tabicon-tab-before-first"        "tab_before_first"
+load_scalar_option "@tmux-tabicon-tab-after"               "tab_after"
+load_scalar_option "@tmux-tabicon-tab-after-last"          "tab_after_last"
+load_scalar_option "@tmux-tabicon-tab-active-before"       "tab_active_before"
+load_scalar_option "@tmux-tabicon-tab-active-before-first" "tab_active_before_first"
+load_scalar_option "@tmux-tabicon-tab-active-after"        "tab_active_after"
+load_scalar_option "@tmux-tabicon-tab-active-after-last"   "tab_active_after_last"
+
+# Layer 2b: array tmux option overrides (| delimited)
+load_array_option() {
+    local tmux_opt="$1"
+    local var_name="$2"
+    local val
+    val=$(tmux show-option -gqv "$tmux_opt" 2>/dev/null)
+    if [ -n "$val" ]; then
+        local IFS='|'
+        eval "${var_name}=(\$val)"
+    fi
+}
+
+load_array_option "@tmux-tabicon-auto-colors"    "auto_colors"
+load_array_option "@tmux-tabicon-auto-icons"     "auto_icons"
+load_array_option "@tmux-tabicon-manual-colors"  "manual_colors"
+load_array_option "@tmux-tabicon-manual-icons"   "manual_icons"
 
 #------------------------------------------------------------------------------
 # SECTION 3: FORMAT STRING GENERATION
 #------------------------------------------------------------------------------
 
-# Helper functions for format string generation
-
-# replace_color_placeholder: Replaces #C with the actual color format
-# Args:
-#   $1: String containing #C placeholders
 replace_color_placeholder() {
-        local input_string=$1
-        echo ${input_string//\#C/$color_format}
+    local input_string=$1
+    echo ${input_string//\#C/$color_format}
 }
 
-# create_window_status_format: Creates the complete format string for a window tab
-# Uses global variables for styling components
 create_window_status_format() {
-        # Add space before title if title exists
-        if [ $tab_title_format != "" ]; then
-                tab_title_format=" $tab_title_format"
-        fi
-        
-        # Build the complete format string by concatenating all components
-        local format="$default_style"
-        format+="$tab_before_format$default_style"
-        format+="$icon_style$icon_format$default_style"
-        format+="$title_style$tab_title_format$default_style"
-        format+="$tab_after_format"
-        
-        echo $format
+    if [ $tab_title_format != "" ]; then
+        tab_title_format=" $tab_title_format"
+    fi
+
+    local format="$default_style"
+    format+="$tab_before_format$default_style"
+    format+="$icon_style$icon_format$default_style"
+    format+="$title_style$tab_title_format$default_style"
+    format+="$tab_after_format"
+
+    echo $format
 }
 
-# create_format_string: Creates a format string for auto/manual arrays
-# Args:
-#   $1: Array name (auto_icons, manual_icons, auto_colors, manual_colors)
-#   $2: Is this an auto array (true/false)
 create_format_string() {
-        local array_name=$1
-        local is_auto=$2
-        local format=""
-        
-        # Get array length using indirect reference
-        eval "local array_length=\${#$array_name[@]}"
-        
-        if [ $array_length -gt 0 ]; then
-                for ((i = 0; i < $array_length; i++)); do
-                        # Get array element using indirect reference
-                        eval "local element=\${$array_name[$i]}"
-                        
-                        if [ "$is_auto" = true ]; then
-                                # For auto arrays, create format based on window index modulo array length
-                                local is_target_format="?#{==:#{e|m|:#I,$array_length},$i}"
-                                format="#{$is_target_format,$element,$format}"
-                        else
-                                # For manual arrays, just append the conditional format
-                                format="#{$element,$format}"
-                        fi
-                done
-        fi
-        
-        echo "$format"
+    local array_name=$1
+    local is_auto=$2
+    local format=""
+
+    eval "local array_length=\${#$array_name[@]}"
+
+    if [ $array_length -gt 0 ]; then
+        for ((i = 0; i < $array_length; i++)); do
+            eval "local element=\${$array_name[$i]}"
+
+            if [ "$is_auto" = true ]; then
+                local is_target_format="?#{==:#{e|m|:#I,$array_length},$i}"
+                format="#{$is_target_format,$element,$format}"
+            else
+                format="#{$element,$format}"
+            fi
+        done
+    fi
+
+    echo "$format"
 }
 
-# Generate icon format string
 icon_format=$(create_format_string "auto_icons" true)
 manual_icon_format=$(create_format_string "manual_icons" false)
 if [ -n "$manual_icon_format" ]; then
-        icon_format="$manual_icon_format$icon_format"
+    icon_format="$manual_icon_format$icon_format"
 fi
 
-# Generate color format string
 color_format=$(create_format_string "auto_colors" true)
 manual_color_format=$(create_format_string "manual_colors" false)
 if [ -n "$manual_color_format" ]; then
-        color_format="$manual_color_format$color_format"
+    color_format="$manual_color_format$color_format"
 fi
 
-# Create conditional formats for first and last window detection
 is_first_format="?#{!=:#I,${window_ids[0]}}"
 is_last_format="?#{!=:#I,${window_ids[$(($window_count - 1))]}}"
 
@@ -132,47 +150,39 @@ is_last_format="?#{!=:#I,${window_ids[$(($window_count - 1))]}}"
 # SECTION 4: APPLY FORMATTING TO NORMAL TABS
 #------------------------------------------------------------------------------
 
-# Apply color replacements and create format for normal (inactive) tabs
 default_style=$(replace_color_placeholder "$style_tab")
 icon_style=$(replace_color_placeholder "$style_tab_icon")
 title_style=$(replace_color_placeholder "$style_tab_title")
 
-# Apply special formatting for first/last tabs
 tab_before_format=$(replace_color_placeholder "#{$is_first_format,$tab_before,$tab_before_first}")
 tab_after_format=$(replace_color_placeholder "#{$is_last_format,$tab_after,$tab_after_last}")
 tab_title_format=$tab_title
 
-# Generate the complete format string for normal tabs
 window_status_format=$(create_window_status_format)
 
 #------------------------------------------------------------------------------
 # SECTION 5: APPLY FORMATTING TO ACTIVE TAB
 #------------------------------------------------------------------------------
 
-# Apply color replacements and create format for active tab
 default_style=$(replace_color_placeholder "$style_tab_active")
 icon_style=$(replace_color_placeholder "$style_tab_active_icon")
 title_style=$(replace_color_placeholder "$style_tab_active_title")
 
-# Apply special formatting for first/last tabs
 tab_before_format=$(replace_color_placeholder "#{$is_first_format,$tab_active_before,$tab_active_before_first}")
 tab_after_format=$(replace_color_placeholder "#{$is_last_format,$tab_active_after,$tab_active_after_last}")
 tab_title_format=$tab_active_title
 
-# Generate the complete format string for active tab
 window_status_current_format=$(create_window_status_format)
 
 #------------------------------------------------------------------------------
 # SECTION 6: APPLY SETTINGS TO TMUX
 #------------------------------------------------------------------------------
 
-# Clear global window status formats
 tmux set-window-option -g window-status-format ""
 tmux set-window-option -g window-status-current-format ""
 
-# Apply the generated formats to each window in the current session
 for id in ${window_ids[@]}; do
-        tmux set-window-option -t $id window-status-format "$window_status_format"
-        tmux set-window-option -t $id window-status-current-format "$window_status_current_format"
-        tmux set-window-option -t $id window-status-separator "$tab_separator"
+    tmux set-window-option -t $id window-status-format "$window_status_format"
+    tmux set-window-option -t $id window-status-current-format "$window_status_current_format"
+    tmux set-window-option -t $id window-status-separator "$tab_separator"
 done
