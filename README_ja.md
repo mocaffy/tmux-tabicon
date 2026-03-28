@@ -1,207 +1,153 @@
 # tmux-tabicon
 
-tmuxのウィンドウタブ（window-status）を色、アイコン、高度なフォーマットでカスタマイズするための強力なプラグインです。
+tmuxのウィンドウタブ（window-status）を色、アイコン、高度なフォーマットでカスタマイズするプラグインです。
 
 [![スクリーンショット](https://user-images.githubusercontent.com/45122432/218329999-735b3a4f-23fc-4aea-95af-ca732cdfc03b.png)](https://user-images.githubusercontent.com/45122432/218329999-735b3a4f-23fc-4aea-95af-ca732cdfc03b.png)
-[![スクリーンショット](https://user-images.githubusercontent.com/45122432/218330413-3e45b472-dfaf-40bb-b7b4-38cd9e42d16d.png)](https://user-images.githubusercontent.com/45122432/218330413-3e45b472-dfaf-40bb-b7b4-38cd9e42d16d.png)
-
-## tmux-tabiconとは？
-
-tmux-tabiconは、tmuxのウィンドウタブ（window-status）の高度なカスタマイズを可能にするプラグインです。以下のことができます：
-
-- タブに自動または条件付きの色を適用する
-- タブにアイコンを追加する
-- アクティブなタブと非アクティブなタブの外観をカスタマイズする
-- 最初と最後のタブに特別なフォーマットを適用する
-- セッション固有のテーマを作成する
+[![スクリーンショット](https://user-images.githubusercontent.com/45122432/218330413-3e45b472-dfaf-40bb-b7b4-38cd9e42d16d.png)](https://user-images.githubusercontent.com/45122432/218330413-3e45b472-dfaf-40bb-b7b4-38cd9e42d21d.png)
 
 ## インストール
 
 ### 前提条件
 
-- [tmux](https://github.com/tmux/tmux) (バージョン2.9以降を推奨)
-- [TPM](https://github.com/tmux-plugins/tpm) (Tmux Plugin Manager)
+- [tmux](https://github.com/tmux/tmux)（バージョン2.9以降を推奨）
+- [TPM](https://github.com/tmux-plugins/tpm)（Tmux Plugin Manager）
 
-### TPMを使用する方法（推奨）
+### TPMを使う方法（推奨）
 
-`~/.tmux.conf`に以下を追加します：
+`~/.tmux.conf` に以下を追加します：
 
 ```bash
-# テーマディレクトリを設定（このディレクトリが存在しない場合は作成してください）
-set -g @tmux-tabicon-themes-dir "~/.config/tmux/tabicon-themes"
-
-# プラグインを追加
 set -g @plugin 'mocaffy/tmux-tabicon'
 
-# TMUXプラグインマネージャを初期化（tmux.confの最後に記述してください）
+# TMUXプラグインマネージャの初期化（tmux.confの末尾に記述）
 run '~/.tmux/plugins/tpm/tpm'
 ```
 
-その後、`prefix` + <kbd>I</kbd>を押してプラグインをインストールします。
+その後、`prefix` + <kbd>I</kbd> を押してプラグインをインストールします。
 
 ### 手動インストール
-
-リポジトリをクローンします：
 
 ```bash
 git clone https://github.com/mocaffy/tmux-tabicon.git ~/.tmux/plugins/tmux-tabicon
 ```
 
-`~/.tmux.conf`に以下を追加します：
+`~/.tmux.conf` に以下を追加します：
 
 ```bash
-# テーマディレクトリを設定（このディレクトリが存在しない場合は作成してください）
-set -g @tmux-tabicon-themes-dir "~/.config/tmux/tabicon-themes"
-
-# プラグインを読み込む
 run-shell ~/.tmux/plugins/tmux-tabicon/tabicon.tmux
 ```
 
-## 動作の仕組み
-
-tmux-tabiconは以下のように動作します：
-
-1. 色、アイコン、フォーマットを定義する設定ファイルを読み込む
-2. これらの設定に基づいてtmuxフォーマット文字列を生成する
-3. これらのフォーマット文字列をwindow-status-formatとwindow-status-current-formatに適用する
-4. tmuxイベント（新しいウィンドウ、ペインの終了など）が発生したときに表示を更新する
-
-このプラグインはtmuxフックを使用して、tmuxセッションで変更が発生したときにタブの外観を自動的に更新します。
-
 ## 設定
 
-### テーマディレクトリ
+設定は以下の順で読み込まれます。後のレイヤーが前のレイヤーを上書きします。
 
-テーマディレクトリを作成し、tmux.confで設定します：
-
-```bash
-set -g @tmux-tabicon-themes-dir "~/.config/tmux/tabicon-themes"
+```
+Layer 0: 組み込みデフォルト値
+Layer 1: @tmux-tabicon-preset で選択したプリセット
+Layer 2: tmux.conf の個別 @tmux-tabicon-* オプション
 ```
 
-### 設定ファイル
-
-tmux-tabiconは以下の設定ファイルを使用します：
-
-1. **default.conf** - 組み込みのデフォルト設定（変更しないでください）
-2. **normal.conf** - すべてのセッションに適用されるカスタム設定（テーマディレクトリに作成します）
-3. **[セッション名].conf** - セッション固有の設定（オプション、テーマディレクトリに作成します）
-
-### テーマの作成
-
-テーマディレクトリに`normal.conf`ファイルを作成します：
+### プリセット選択
 
 ```bash
-mkdir -p ~/.config/tmux/tabicon-themes
-touch ~/.config/tmux/tabicon-themes/normal.conf
+set -g @tmux-tabicon-preset "island-dark"
 ```
 
-### 設定オプション
+利用可能なプリセット：
 
-テーマファイルで設定できる主なオプションは以下の通りです：
+| 名前 | 説明 |
+|---|---|
+| `island-dark` | ソリッドな背景のダークテーマ |
+| `capsule-light` | カプセル型セパレータのライトテーマ |
 
-#### 色
+プリセットを無効にする場合：
 
 ```bash
-# 自動色（タブを通じてローテーションされる）
-auto_colors=("#9a348e" "#da627d" "#fca17d" "#86bbd8" "#06969A" "#33658a")
-
-# 条件付き色（ウィンドウ名やその他の条件に基づいて適用される）
-manual_colors=("?#{==:#W,[tmux]},#0000ff")
+set -g @tmux-tabicon-preset "none"
 ```
 
-#### アイコン
+### スカラー値の上書き
+
+プリセットの任意の値を個別に上書きできます：
 
 ```bash
-# 自動アイコン（タブを通じてローテーションされる）
-auto_icons=("●")
+set -g @tmux-tabicon-tab-title           "#I:#W"   # タイトルの書式
+set -g @tmux-tabicon-tab-active-title    "#I:#W"
+set -g @tmux-tabicon-tab-separator       " "
 
-# 条件付きアイコン（ウィンドウ名やその他の条件に基づいて適用される）
-manual_icons=("?#{==:#W,[tmux]},")
+set -g @tmux-tabicon-style-tab           "#[bg=#1e1e2e]"
+set -g @tmux-tabicon-style-tab-icon      "#[fg=#C]"   # #C はタブの色に置換される
+set -g @tmux-tabicon-style-tab-title     "#[fg=#cdd6f4]"
+
+set -g @tmux-tabicon-style-tab-active    "#[bg=#C]#[fg=#1e1e2e]"
+set -g @tmux-tabicon-style-tab-active-icon   ""
+set -g @tmux-tabicon-style-tab-active-title  ""
+
+set -g @tmux-tabicon-tab-before          "#[fg=#45475a]▏"
+set -g @tmux-tabicon-tab-before-first    " "
+set -g @tmux-tabicon-tab-after           " "
+set -g @tmux-tabicon-tab-after-last      " "
+
+set -g @tmux-tabicon-tab-active-before         "#[fg=#45475a]▏"
+set -g @tmux-tabicon-tab-active-before-first   " "
+set -g @tmux-tabicon-tab-active-after          " "
+set -g @tmux-tabicon-tab-active-after-last     " "
 ```
 
-#### 通常タブのスタイル
+### 配列値の上書き
+
+配列は `|` 区切りの文字列で指定します：
 
 ```bash
-# ウィンドウタイトルのフォーマット
-tab_title="#W"
+# タブに順番に割り当てる色（サイクル）
+set -g @tmux-tabicon-auto-colors "#f38ba8|#fab387|#f9e2af|#a6e3a1|#89b4fa|#cba6f7"
 
-# タブの先頭部分のフォーマット
-tab_before_first=" "      # 最初のタブ用
-tab_before="#[fg=#222233]▏"  # その他のタブ用
+# タブに順番に割り当てるアイコン（サイクル）
+set -g @tmux-tabicon-auto-icons "●"
 
-# スタイル設定
-style_tab=""              # 基本スタイル
-style_tab_icon="#[fg=#C]"  # アイコンスタイル（#Cは色に置き換えられる）
-style_tab_title="#[fg=#ffffff]"  # タイトルスタイル
+# ウィンドウ名に応じたアイコン（tmux 条件フォーマット）
+set -g @tmux-tabicon-manual-icons \
+  "?#{==:#W,nvim},|?#{==:#W,node},󰎙|?#{==:#W,python},"
 
-# タブの末尾部分のフォーマット
-tab_after=" "            # ほとんどのタブ用
-tab_after_last=" "       # 最後のタブ用
+# ウィンドウ名に応じた色
+set -g @tmux-tabicon-manual-colors \
+  "?#{==:#{pane_current_command},ssh},#ff0000"
 ```
 
-#### アクティブタブのスタイル
+`manual-icons` / `manual-colors` が優先して評価され、どの条件にもマッチしない場合は `auto-icons` / `auto-colors` にフォールバックします。
+
+### `#C` プレースホルダー
+
+スタイル文字列内の `#C` は、そのタブに解決された色（`auto-colors` または `manual-colors` の値）に置換されます。アイコンと背景の両方に同じ色を使う場合に便利です。
+
+## 設定例
+
+### 最小構成（プリセットのみ）
 
 ```bash
-# アクティブウィンドウタイトルのフォーマット
-tab_active_title="#W"
-
-# アクティブタブの先頭部分のフォーマット
-tab_active_before_first=" "
-tab_active_before="#[fg=#222233]▏"
-
-# アクティブタブのスタイル設定
-style_tab_active="#[bg=#C]#[fg=#ffffff]"  # 基本スタイル
-style_tab_active_icon=""  # アイコンスタイル
-style_tab_active_title="" # タイトルスタイル
-
-# アクティブタブの末尾部分のフォーマット
-tab_active_after=" "
-tab_active_after_last=" "
+set -g @tmux-tabicon-preset "island-dark"
+set -g @plugin 'mocaffy/tmux-tabicon'
+run '~/.tmux/plugins/tpm/tpm'
 ```
 
-#### セパレータ
+### プリセット＋上書き
 
 ```bash
-# タブ間の文字
-tab_separator=""
+set -g @tmux-tabicon-preset "capsule-light"
+set -g @tmux-tabicon-tab-title "#I:#W"
+set -g @tmux-tabicon-auto-colors "#f38ba8|#fab387|#f9e2af|#a6e3a1|#89b4fa|#cba6f7"
+set -g @tmux-tabicon-manual-icons \
+  "?#{==:#W,nvim},|?#{==:#W,node},󰎙"
+set -g @plugin 'mocaffy/tmux-tabicon'
+run '~/.tmux/plugins/tpm/tpm'
 ```
-
-## 高度な使用法
-
-### 条件付きフォーマット
-
-tmuxの条件付きフォーマットを使用して、ウィンドウのプロパティに基づいて色やアイコンを変更できます：
-
-```bash
-# SSHウィンドウを赤色にする
-manual_colors=("?#{==:#{pane_current_command},ssh},#ff0000")
-
-# vimウィンドウに特別なアイコンを追加する
-manual_icons=("?#{==:#{pane_current_command},vim},")
-```
-
-### セッション固有のテーマ
-
-セッション名に基づいた設定ファイルを作成します：
-
-```bash
-# "dev"という名前のセッション用
-touch ~/.config/tmux/tabicon-themes/dev.conf
-```
-
-この設定は、「dev」セッションにいる場合にのみ適用されます。
 
 ## トラブルシューティング
 
-タブが正しく更新されない場合：
+タブが更新されない場合：
 
-1. `prefix` + <kbd>r</kbd>を押してタブを手動で更新する
-2. テーマディレクトリが正しく設定されていることを確認する
-3. 設定ファイルの構文が正しいことを確認する
-
-## 関連プロジェクト
-
-- [tmux-tabicon-theme](https://github.com/mocaffy/tmux-tabicon-theme) - tmux-tabicon用の既製テーマ
+1. `prefix` + <kbd>r</kbd> で手動更新する
+2. `@tmux-tabicon-preset` に指定した名前が有効なプリセット名か確認する
 
 ## ライセンス
 

@@ -1,19 +1,9 @@
 # tmux-tabicon
 
-A powerful plugin for customizing tmux window tabs (window-status) with colors, icons, and advanced formatting.
+A plugin for customizing tmux window tabs with colors, icons, and advanced formatting.
 
 [![screenshot](https://user-images.githubusercontent.com/45122432/218329999-735b3a4f-23fc-4aea-95af-ca732cdfc03b.png)](https://user-images.githubusercontent.com/45122432/218329999-735b3a4f-23fc-4aea-95af-ca732cdfc03b.png)
-[![screenshot](https://user-images.githubusercontent.com/45122432/218330413-3e45b472-dfaf-40bb-b7b4-38cd9e42d16d.png)](https://user-images.githubusercontent.com/45122432/218330413-3e45b472-dfaf-40bb-b7b4-38cd9e42d16d.png)
-
-## What is tmux-tabicon?
-
-tmux-tabicon is a plugin that enables advanced customization of tmux window tabs (window-status). It allows you to:
-
-- Apply automatic or conditional colors to tabs
-- Add icons to tabs
-- Customize the appearance of active and inactive tabs
-- Apply special formatting to first and last tabs
-- Create session-specific themes
+[![screenshot](https://user-images.githubusercontent.com/45122432/218330413-3e45b472-dfaf-40bb-b7b4-38cd9e42d16d.png)](https://user-images.githubusercontent.com/45122432/218330413-3e45b472-dfaf-40bb-b7b4-38cd9e42d21d.png)
 
 ## Installation
 
@@ -27,10 +17,6 @@ tmux-tabicon is a plugin that enables advanced customization of tmux window tabs
 Add the following to your `~/.tmux.conf`:
 
 ```bash
-# Set the themes directory (create this directory if it doesn't exist)
-set -g @tmux-tabicon-themes-dir "~/.config/tmux/tabicon-themes"
-
-# Add the plugin
 set -g @plugin 'mocaffy/tmux-tabicon'
 
 # Initialize TMUX plugin manager (keep this line at the very bottom of tmux.conf)
@@ -41,167 +27,127 @@ Then press `prefix` + <kbd>I</kbd> to install the plugin.
 
 ### Manual Installation
 
-Clone the repository:
-
 ```bash
 git clone https://github.com/mocaffy/tmux-tabicon.git ~/.tmux/plugins/tmux-tabicon
 ```
 
-Add the following to your `~/.tmux.conf`:
+Add to your `~/.tmux.conf`:
 
 ```bash
-# Set the themes directory (create this directory if it doesn't exist)
-set -g @tmux-tabicon-themes-dir "~/.config/tmux/tabicon-themes"
-
-# Source the plugin
 run-shell ~/.tmux/plugins/tmux-tabicon/tabicon.tmux
 ```
 
-## How It Works
-
-tmux-tabicon works by:
-
-1. Loading configuration files that define colors, icons, and formatting
-2. Generating tmux format strings based on these configurations
-3. Applying these format strings to window-status-format and window-status-current-format
-4. Refreshing the display when tmux events occur (new window, pane exit, etc.)
-
-The plugin uses tmux hooks to automatically update the tab appearance when changes occur in your tmux session.
-
 ## Configuration
 
-### Theme Directory
+Settings are loaded in the following order. Later layers override earlier ones.
 
-Create a themes directory and set it in your tmux.conf:
-
-```bash
-set -g @tmux-tabicon-themes-dir "~/.config/tmux/tabicon-themes"
+```
+Layer 0: built-in defaults
+Layer 1: preset selected via @tmux-tabicon-preset
+Layer 2: individual @tmux-tabicon-* options in tmux.conf
 ```
 
-### Configuration Files
-
-tmux-tabicon uses the following configuration files:
-
-1. **default.conf** - Built-in default settings (don't modify this)
-2. **normal.conf** - Your custom settings that apply to all sessions (create this in your themes directory)
-3. **[session-name].conf** - Session-specific settings (optional, create in your themes directory)
-
-### Creating Your Theme
-
-Create a `normal.conf` file in your themes directory:
+### Preset selection
 
 ```bash
-mkdir -p ~/.config/tmux/tabicon-themes
-touch ~/.config/tmux/tabicon-themes/normal.conf
+set -g @tmux-tabicon-preset "island-dark"
 ```
 
-### Configuration Options
+Available presets:
 
-Here are the key configuration options you can set in your theme files:
+| Name | Description |
+|---|---|
+| `island-dark` | Dark theme with solid background tabs |
+| `capsule-light` | Light theme with capsule-style separators |
 
-#### Colors
+To disable preset loading entirely:
 
 ```bash
-# Automatic colors (rotated through tabs)
-auto_colors=("#9a348e" "#da627d" "#fca17d" "#86bbd8" "#06969A" "#33658a")
-
-# Conditional colors (applied based on window name or other conditions)
-manual_colors=("?#{==:#W,[tmux]},#0000ff")
+set -g @tmux-tabicon-preset "none"
 ```
 
-#### Icons
+### Scalar overrides
+
+Any preset value can be overridden individually:
 
 ```bash
-# Automatic icons (rotated through tabs)
-auto_icons=("●")
+set -g @tmux-tabicon-tab-title           "#I:#W"   # window title format
+set -g @tmux-tabicon-tab-active-title    "#I:#W"
+set -g @tmux-tabicon-tab-separator       " "
 
-# Conditional icons (applied based on window name or other conditions)
-manual_icons=("?#{==:#W,[tmux]},")
+set -g @tmux-tabicon-style-tab           "#[bg=#1e1e2e]"
+set -g @tmux-tabicon-style-tab-icon      "#[fg=#C]"   # #C is replaced with the tab color
+set -g @tmux-tabicon-style-tab-title     "#[fg=#cdd6f4]"
+
+set -g @tmux-tabicon-style-tab-active    "#[bg=#C]#[fg=#1e1e2e]"
+set -g @tmux-tabicon-style-tab-active-icon   ""
+set -g @tmux-tabicon-style-tab-active-title  ""
+
+set -g @tmux-tabicon-tab-before          "#[fg=#45475a]▏"
+set -g @tmux-tabicon-tab-before-first    " "
+set -g @tmux-tabicon-tab-after           " "
+set -g @tmux-tabicon-tab-after-last      " "
+
+set -g @tmux-tabicon-tab-active-before         "#[fg=#45475a]▏"
+set -g @tmux-tabicon-tab-active-before-first   " "
+set -g @tmux-tabicon-tab-active-after          " "
+set -g @tmux-tabicon-tab-active-after-last     " "
 ```
 
-#### Normal Tab Styling
+### Array overrides
+
+Arrays use `|` as a delimiter:
 
 ```bash
-# Window title format
-tab_title="#W"
+# Colors assigned to tabs in sequence (cycling)
+set -g @tmux-tabicon-auto-colors "#f38ba8|#fab387|#f9e2af|#a6e3a1|#89b4fa|#cba6f7"
 
-# Formatting for tab beginning
-tab_before_first=" "      # For the first tab
-tab_before="#[fg=#222233]▏"  # For other tabs
+# Icons assigned to tabs in sequence (cycling)
+set -g @tmux-tabicon-auto-icons "●"
 
-# Style settings
-style_tab=""              # Base style
-style_tab_icon="#[fg=#C]"  # Icon style (#C is replaced with color)
-style_tab_title="#[fg=#ffffff]"  # Title style
+# Per-window icon based on window name (tmux conditional format)
+set -g @tmux-tabicon-manual-icons \
+  "?#{==:#W,nvim},|?#{==:#W,node},󰎙|?#{==:#W,python},"
 
-# Formatting for tab end
-tab_after=" "            # For most tabs
-tab_after_last=" "       # For the last tab
+# Per-window color based on window name
+set -g @tmux-tabicon-manual-colors \
+  "?#{==:#{pane_current_command},ssh},#ff0000"
 ```
 
-#### Active Tab Styling
+`manual-icons` and `manual-colors` are checked first; if no condition matches, `auto-icons` and `auto-colors` are used as fallback.
+
+### The `#C` placeholder
+
+In style strings, `#C` is replaced with the resolved color for that tab (from `auto-colors` or `manual-colors`). This lets you use the tab color in both icon and background styles without duplication.
+
+## Examples
+
+### Minimal (preset only)
 
 ```bash
-# Active window title format
-tab_active_title="#W"
-
-# Formatting for active tab beginning
-tab_active_before_first=" "
-tab_active_before="#[fg=#222233]▏"
-
-# Style settings for active tab
-style_tab_active="#[bg=#C]#[fg=#ffffff]"  # Base style
-style_tab_active_icon=""  # Icon style
-style_tab_active_title="" # Title style
-
-# Formatting for active tab end
-tab_active_after=" "
-tab_active_after_last=" "
+set -g @tmux-tabicon-preset "island-dark"
+set -g @plugin 'mocaffy/tmux-tabicon'
+run '~/.tmux/plugins/tpm/tpm'
 ```
 
-#### Separator
+### Preset with overrides
 
 ```bash
-# Character between tabs
-tab_separator=""
+set -g @tmux-tabicon-preset "capsule-light"
+set -g @tmux-tabicon-tab-title "#I:#W"
+set -g @tmux-tabicon-auto-colors "#f38ba8|#fab387|#f9e2af|#a6e3a1|#89b4fa|#cba6f7"
+set -g @tmux-tabicon-manual-icons \
+  "?#{==:#W,nvim},|?#{==:#W,node},󰎙"
+set -g @plugin 'mocaffy/tmux-tabicon'
+run '~/.tmux/plugins/tpm/tpm'
 ```
-
-## Advanced Usage
-
-### Conditional Formatting
-
-You can use tmux's conditional formatting to change colors or icons based on window properties:
-
-```bash
-# Make SSH windows red
-manual_colors=("?#{==:#{pane_current_command},ssh},#ff0000")
-
-# Add special icon for vim windows
-manual_icons=("?#{==:#{pane_current_command},vim},")
-```
-
-### Session-Specific Themes
-
-Create a configuration file named after your session:
-
-```bash
-# For a session named "dev"
-touch ~/.config/tmux/tabicon-themes/dev.conf
-```
-
-This configuration will only apply when you're in the "dev" session.
 
 ## Troubleshooting
 
-If your tabs aren't updating properly:
+If tabs are not updating:
 
-1. Press `prefix` + <kbd>r</kbd> to manually refresh the tabs
-2. Check that your themes directory is set correctly
-3. Verify your configuration files have the correct syntax
-
-## Related Projects
-
-- [tmux-tabicon-theme](https://github.com/mocaffy/tmux-tabicon-theme) - Pre-made themes for tmux-tabicon
+1. Press `prefix` + <kbd>r</kbd> to manually refresh
+2. Check that `@tmux-tabicon-preset` matches an available preset name
 
 ## License
 
