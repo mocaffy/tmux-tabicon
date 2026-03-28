@@ -142,32 +142,32 @@ is_first_format="?#{!=:#I,${window_ids[0]}}"
 is_last_format="?#{!=:#I,${window_ids[$(($window_count - 1))]}}"
 
 #------------------------------------------------------------------------------
-# SECTION 4: APPLY FORMATTING TO NORMAL TABS
+# SECTION 4+5: BUILD NORMAL AND ACTIVE TAB FORMAT STRINGS
 #------------------------------------------------------------------------------
 
-default_style=$(replace_color_placeholder "$style_tab")
-icon_style=$(replace_color_placeholder "$style_tab_icon")
-title_style=$(replace_color_placeholder "$style_tab_title")
+# Build a window-status format string.
+# Arguments: style_tab style_icon style_title before before_first after after_last title
+build_tab_format() {
+    default_style=$(replace_color_placeholder "$1")
+    icon_style=$(replace_color_placeholder "$2")
+    title_style=$(replace_color_placeholder "$3")
+    tab_before_format=$(replace_color_placeholder "#{$is_first_format,$4,$5}")
+    tab_after_format=$(replace_color_placeholder "#{$is_last_format,$6,$7}")
+    tab_title_format="$8"
+    create_window_status_format
+}
 
-tab_before_format=$(replace_color_placeholder "#{$is_first_format,$tab_before,$tab_before_first}")
-tab_after_format=$(replace_color_placeholder "#{$is_last_format,$tab_after,$tab_after_last}")
-tab_title_format=$tab_title
+window_status_format=$(build_tab_format \
+    "$style_tab"        "$style_tab_icon"        "$style_tab_title" \
+    "$tab_before"       "$tab_before_first" \
+    "$tab_after"        "$tab_after_last" \
+    "$tab_title")
 
-window_status_format=$(create_window_status_format)
-
-#------------------------------------------------------------------------------
-# SECTION 5: APPLY FORMATTING TO ACTIVE TAB
-#------------------------------------------------------------------------------
-
-default_style=$(replace_color_placeholder "$style_tab_active")
-icon_style=$(replace_color_placeholder "$style_tab_active_icon")
-title_style=$(replace_color_placeholder "$style_tab_active_title")
-
-tab_before_format=$(replace_color_placeholder "#{$is_first_format,$tab_active_before,$tab_active_before_first}")
-tab_after_format=$(replace_color_placeholder "#{$is_last_format,$tab_active_after,$tab_active_after_last}")
-tab_title_format=$tab_active_title
-
-window_status_current_format=$(create_window_status_format)
+window_status_current_format=$(build_tab_format \
+    "$style_tab_active"       "$style_tab_active_icon"       "$style_tab_active_title" \
+    "$tab_active_before"      "$tab_active_before_first" \
+    "$tab_active_after"       "$tab_active_after_last" \
+    "$tab_active_title")
 
 #------------------------------------------------------------------------------
 # SECTION 6: APPLY SETTINGS TO TMUX
