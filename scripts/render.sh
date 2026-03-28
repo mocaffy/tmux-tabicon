@@ -74,8 +74,7 @@ load_array_option() {
     local val
     val=$(tmux show-option -gqv "$tmux_opt" 2>/dev/null)
     if [ -n "$val" ]; then
-        local IFS='|'
-        eval "${var_name}=(\$val)"
+        IFS='|' read -ra "$var_name" <<< "$val"
     fi
 }
 
