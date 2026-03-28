@@ -89,11 +89,11 @@ load_array_option "@tmux-tabicon-manual-icons"   "manual_icons"
 
 replace_color_placeholder() {
     local input_string=$1
-    echo ${input_string//\#C/$color_format}
+    printf '%s\n' "${input_string//\#C/$color_format}"
 }
 
 create_window_status_format() {
-    if [ $tab_title_format != "" ]; then
+    if [ -n "$tab_title_format" ]; then
         tab_title_format=" $tab_title_format"
     fi
 
@@ -103,7 +103,7 @@ create_window_status_format() {
     format+="$title_style$tab_title_format$default_style"
     format+="$tab_after_format"
 
-    echo $format
+    printf '%s\n' "$format"
 }
 
 create_format_string() {
@@ -176,7 +176,7 @@ window_status_current_format=$(build_tab_format \
 tmux set-window-option -g window-status-format ""
 tmux set-window-option -g window-status-current-format ""
 
-for id in ${window_ids[@]}; do
+for id in "${window_ids[@]}"; do
     tmux set-window-option -t $id window-status-format "$window_status_format"
     tmux set-window-option -t $id window-status-current-format "$window_status_current_format"
     tmux set-window-option -t $id window-status-separator "$tab_separator"
