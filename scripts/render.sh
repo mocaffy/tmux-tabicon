@@ -107,36 +107,33 @@ create_window_status_format() {
 }
 
 create_format_string() {
-    local array_name=$1
-    local is_auto=$2
+    local is_auto=$1
+    shift
+    local array_length=$#
     local format=""
 
-    eval "local array_length=\${#$array_name[@]}"
+    for ((i = 1; i <= array_length; i++)); do
+        local element="${!i}"
 
-    if [ $array_length -gt 0 ]; then
-        for ((i = 0; i < $array_length; i++)); do
-            eval "local element=\${$array_name[$i]}"
+        if [ "$is_auto" = true ]; then
+            local is_target_format="?#{==:#{e|m|:#I,$array_length},$(( i - 1 ))}"
+            format="#{$is_target_format,$element,$format}"
+        else
+            format="#{$element,$format}"
+        fi
+    done
 
-            if [ "$is_auto" = true ]; then
-                local is_target_format="?#{==:#{e|m|:#I,$array_length},$i}"
-                format="#{$is_target_format,$element,$format}"
-            else
-                format="#{$element,$format}"
-            fi
-        done
-    fi
-
-    echo "$format"
+    printf '%s\n' "$format"
 }
 
-icon_format=$(create_format_string "auto_icons" true)
-manual_icon_format=$(create_format_string "manual_icons" false)
+icon_format=$(create_format_string true "${auto_icons[@]}")
+manual_icon_format=$(create_format_string false "${manual_icons[@]}")
 if [ -n "$manual_icon_format" ]; then
     icon_format="$manual_icon_format$icon_format"
 fi
 
-color_format=$(create_format_string "auto_colors" true)
-manual_color_format=$(create_format_string "manual_colors" false)
+color_format=$(create_format_string true "${auto_colors[@]}")
+manual_color_format=$(create_format_string false "${manual_colors[@]}")
 if [ -n "$manual_color_format" ]; then
     color_format="$manual_color_format$color_format"
 fi
